@@ -4,6 +4,7 @@ import { CreateTaskDTO } from './dto/create-task.dto';
 import { GetTasksFilterDTO } from './dto/get-tasks-filter.dto';
 import { TaskRepository } from './task.repository';
 import { Task } from './task.entity';
+import { TaskStatus } from './task-status.enum';
 
 @Injectable()
 export class TasksService {
@@ -11,6 +12,10 @@ export class TasksService {
     @InjectRepository(TaskRepository)
     private taskRepository: TaskRepository,
   ) {}
+
+  async getTasks(filterDTO: GetTasksFilterDTO): Promise<Task[]> {
+    return await this.taskRepository.getTasks(filterDTO);
+  }
   // getAllTasks(): Task[] {
   //   return this.tasks;
   // }
@@ -40,28 +45,22 @@ export class TasksService {
     return found;
   }
 
-  // createTask(createTaskDTO: CreateTaskDTO): Task {
-  //   const { title, description } = createTaskDTO;
+  async createTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
+    return this.taskRepository.createTask(createTaskDTO);
+  }
 
-  //   const task: Task = {
-  //     id: uuidv4(),
-  //     title,
-  //     description,
-  //     status: TaskStatus.OPEN,
-  //   };
+  async deleteTask(id: number): Promise<void> {
+    const result = await this.taskRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Task with ID ${id} not found`);
+    }
+    return;
+  }
 
-  //   this.tasks = [...this.tasks, task];
-  //   return task;
-  // }
-
-  // deleteTask(id: string): void {
-  //   const found = this.getTaskById(id);
-  //   this.tasks = this.tasks.filter((task) => task.id != found.id);
-  // }
-
-  // updateTaskStatus(id: string, status: TaskStatus): Task {
-  //   const task = this.getTaskById(id);
-  //   task.status = status;
-  //   return task;
-  // }
+  async updateTaskStatus(id: number, status: TaskStatus): Promise<Task> {
+    const task = await this.getTaskById(id);
+    task.status = status;
+    await task.save();
+    return task;
+  }
 }
