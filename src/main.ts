@@ -15,7 +15,7 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
-  const port = serverConfig.port;
+  const port = process.env.PORT || serverConfig.port;
   await app.listen(port);
   logger.log(`Application listening on port ${port}`);
 }
